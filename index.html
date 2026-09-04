@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0">
+<title>スマホ道場</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1C2B4A;
+    --navy-deep:#101A30;
+    --paper:#F7F3E9;
+    --paper-soft:#EFE8D8;
+    --ink:#2A2620;
+    --kaki:#E2672A;
+    --kaki-deep:#B94F1D;
+    --yamabuki:#F0A202;
+    --moss:#3F7A5C;
+    --moss-deep:#2E5C45;
+    --alert:#B23A1A;
+    --line:#D8CDB4;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--navy);
+    color:var(--ink);
+    font-family:"BIZ UDPGothic","Hiragino Kaku Gothic ProN",sans-serif;
+    font-size:19px;
+    line-height:1.75;
+    -webkit-tap-highlight-color:transparent;
+    min-height:100vh;
+  }
+  h1,h2,h3{
+    font-family:"Zen Maru Gothic","BIZ UDPGothic",sans-serif;
+    margin:0 0 0.4em 0;
+    color:var(--navy);
+  }
+  button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer;}
+  #app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--paper);position:relative;}
+
+  /* ---------- top bar ---------- */
+  #topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--navy);color:var(--paper);
+    padding:14px 16px;
+    position:sticky;top:0;z-index:20;
+    border-bottom:3px solid var(--kaki);
+  }
+  #topbar .icon-btn{
+    background:none;border:none;font-size:30px;padding:6px 10px;border-radius:14px;
+  }
+  #topbar .icon-btn:active{background:rgba(255,255,255,0.15);}
+  #topInfo{text-align:right;font-family:"Zen Maru Gothic",sans-serif;}
+  #starLine{font-size:20px;font-weight:700;color:var(--yamabuki);}
+  #beltDisplay{font-size:14px;color:var(--paper-soft);}
+
+  /* ---------- screens ---------- */
+  .screen{display:none;padding:28px 20px 60px;}
+  .screen.active{display:block;animation:fadeIn .35s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ---------- title screen ---------- */
+  #screen-title{text-align:center;padding-top:20vh;}
+  #screen-title h1{font-size:40px;font-weight:900;}
+  #screen-title p{color:#5b5346;font-size:18px;}
+  .torii{font-size:56px;margin-bottom:6px;}
+
+  .btn-primary{
+    display:inline-block;margin-top:28px;
+    background:var(--kaki);color:#fff;border:none;
+    padding:18px 40px;border-radius:999px;
+    font-size:22px;font-weight:700;font-family:"Zen Maru Gothic",sans-serif;
+    box-shadow:0 4px 0 var(--kaki-deep);
+  }
+  .btn-primary:active{transform:translateY(3px);box-shadow:0 1px 0 var(--kaki-deep);}
+
+  .btn-secondary{
+    display:inline-block;
+    background:var(--paper);color:var(--navy);border:2px solid var(--navy);
+    padding:14px 28px;border-radius:999px;
+    font-size:19px;font-weight:700;font-family:"Zen Maru Gothic",sans-serif;
+  }
+  .btn-secondary:active{background:var(--paper-soft);}
+
+  /* ---------- map screen ---------- */
+  #screen-map h2{font-size:26px;text-align:center;}
+  #stoneList{
+    margin-top:20px;
+    display:flex;flex-direction:column;gap:18px;
+    position:relative;
+    padding-left:6px;padding-right:6px;
+  }
+  .stone{
+    border:none;border-radius:20px;
+    background:var(--navy);color:var(--paper);
+    padding:16px 20px;text-align:left;
+    display:flex;align-items:center;gap:16px;
+    font-family:"Zen Maru Gothic",sans-serif;
+    box-shadow:0 3px 0 var(--navy-deep);
+    width:82%;
+  }
+  .stone:nth-child(even){align-self:flex-end;}
+  .stone:active{transform:translateY(2px);box-shadow:0 1px 0 var(--navy-deep);}
+  .stone.done{background:var(--moss);box-shadow:0 3px 0 var(--moss-deep);}
+  .stone-num{
+    flex:none;width:44px;height:44px;border-radius:50%;
+    background:var(--kaki);color:#fff;font-weight:700;font-size:20px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .stone.done .stone-num{background:var(--yamabuki);}
+  .stone-title{font-size:18px;font-weight:700;}
+
+  /* ---------- stage screen ---------- */
+  #stageHeader h2{font-size:23px;}
+  #stageHeader p{color:#5b5346;font-size:17px;margin-top:0;}
+
+  .mascot-row{display:flex;align-items:center;gap:12px;margin:14px 0 6px;}
+  .mascot{
+    flex:none;width:56px;height:56px;border-radius:50%;
+    background:var(--paper-soft);border:2px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:30px;
+  }
+  .feedback{
+    flex:1;min-height:1.2em;font-size:17px;font-weight:700;
+    padding:10px 14px;border-radius:14px;background:transparent;
+    transition:background .2s;
+  }
+  .feedback.show.good{background:#E4EFE7;color:var(--moss-deep);}
+  .feedback.show.gentle{background:#FBEFE1;color:var(--kaki-deep);}
+
+  /* ---------- phone mockup ---------- */
+  .phone-frame{
+    margin:18px auto 10px;
+    width:290px;
+    background:var(--navy-deep);
+    border-radius:36px;
+    padding:14px 10px;
+    box-shadow:0 10px 24px rgba(0,0,0,0.25);
+    position:relative;
+  }
+  .phone-notch{
+    width:70px;height:8px;background:#000;border-radius:6px;
+    margin:0 auto 8px;
+  }
+  .phone-screen{
+    background:#fff;border-radius:22px;
+    min-height:340px;
+    overflow:hidden;position:relative;
+    display:flex;flex-direction:column;
+  }
+  .side-buttons{
+    position:absolute;right:-14px;top:90px;
+    display:flex;flex-direction:column;gap:14px;
+  }
+  .side-btn{
+    background:var(--kaki);color:#fff;border:none;
+    width:44px;height:44px;border-radius:12px;font-size:20px;font-weight:700;
+    box-shadow:0 3px 0 var(--kaki-deep);
+  }
+  .side-btn:active{transform:translateY(2px);box-shadow:none;}
+
+  #stageControls{min-height:1.6em;text-align:center;margin-top:14px;}
+  .hint-text{font-size:17px;color:#4a4536;margin:0;}
+  .hint-text small{color:#8a8270;}
+
+  /* ---------- generic phone-screen contents ---------- */
+  .screen-off{
+    flex:1;display:flex;align-items:center;justify-content:center;
+    background:#111;color:#666;font-size:15px;text-align:center;padding:20px;
+  }
+  .lock-screen{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:linear-gradient(180deg,#26365c,#101a30);color:#fff;
+  }
+  .lock-time{font-size:44px;font-weight:700;font-family:"Zen Maru Gothic",sans-serif;}
+  .lock-hint{margin-top:26px;font-size:15px;opacity:.85;animation:bob 1.4s infinite;}
+  @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+
+  .home-screen{flex:1;background:#EAF1F5;padding:14px;}
+  .home-clock{text-align:center;font-size:22px;font-weight:700;color:var(--navy);margin-bottom:12px;font-family:"Zen Maru Gothic",sans-serif;}
+  .icon-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .icon-btn-lg{
+    background:#fff;border:none;border-radius:16px;padding:14px 6px;
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    box-shadow:0 2px 4px rgba(0,0,0,0.08);
+  }
+  .icon-btn-lg.icon-link{background:#FDE9E4;border:2px solid var(--kaki);}
+  .icon-emoji{font-size:32px;}
+  .icon-label{font-size:14px;font-weight:700;color:var(--ink);}
+  .icon-btn-lg.correct-flash{background:#DCEEDF;}
+  .icon-btn-lg.wrong-flash{animation:shake .3s;background:#F6DCD3;}
+  .icon-btn-lg.pulse-hint{animation:pulseHint 1s infinite;}
+  @keyframes shake{25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+  @keyframes pulseHint{0%,100%{box-shadow:0 0 0 0 rgba(226,103,42,0.6);}50%{box-shadow:0 0 0 10px rgba(226,103,42,0);}}
+
+  /* ---------- Rakuten Link 導入画面 ---------- */
+  .link-intro{flex:1;background:#fff;padding:20px;display:flex;flex-direction:column;gap:16px;justify-content:center;}
+  .link-icons-compare{display:flex;justify-content:center;gap:24px;}
+  .compare-item{
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    padding:12px;border-radius:14px;background:#F0F0F0;width:100px;
+  }
+  .compare-item .icon-emoji{font-size:34px;}
+  .compare-item .icon-label{font-size:13px;font-weight:700;text-align:center;}
+  .compare-item.highlight{background:#FDE9E4;border:2px solid var(--kaki);}
+  .link-note{font-size:15px;color:var(--kaki-deep);background:#FBEFE1;padding:12px 14px;border-radius:12px;text-align:center;}
+
+  .list-screen{flex:1;background:#fff;padding:16px;}
+  .list-title{font-weight:700;font-size:17px;color:#5b5346;margin-bottom:10px;}
+  .contact-btn{
+    display:block;width:100%;text-align:left;margin-bottom:10px;
+    background:var(--paper-soft);border:none;border-radius:14px;padding:14px 16px;font-size:17px;font-weight:700;
+  }
+
+  .calling-screen,.calling-blank,.incoming-screen{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:linear-gradient(180deg,#2b4066,#101a30);color:#fff;gap:10px;text-align:center;padding:20px;
+  }
+  .calling-name,.incoming-name{font-size:22px;font-weight:700;font-family:"Zen Maru Gothic",sans-serif;}
+  .calling-status,.incoming-sub{font-size:15px;opacity:.85;}
+  .calling-screen.connected{background:linear-gradient(180deg,#2f5c46,#1c3a2c);}
+  .hangup-btn{margin-top:10px;background:#C0392B;color:#fff;border:none;border-radius:999px;padding:12px 24px;font-size:16px;font-weight:700;}
+  .incoming-screen.ring .incoming-name{animation:ringshake 1s infinite;}
+  @keyframes ringshake{0%,100%{transform:rotate(0);}25%{transform:rotate(-2deg);}75%{transform:rotate(2deg);}}
+  .incoming-buttons{display:flex;gap:60px;margin-top:18px;}
+  .incoming-buttons button{width:60px;height:60px;border-radius:50%;border:none;font-size:26px;box-shadow:0 3px 0 rgba(0,0,0,0.3);}
+  .answer-btn{background:#3CB371;}
+  .decline-btn{background:#C0392B;}
+
+  .camera-screen{flex:1;background:#1b1b1b;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;}
+  .viewfinder{font-size:70px;background:repeating-linear-gradient(0deg,#2a2a2a,#2a2a2a 1px,#1b1b1b 1px,#1b1b1b 34px),repeating-linear-gradient(90deg,#2a2a2a,#2a2a2a 1px,#1b1b1b 1px,#1b1b1b 34px);width:100%;height:220px;display:flex;align-items:center;justify-content:center;}
+  .shutter-btn{margin-top:18px;width:60px;height:60px;border-radius:50%;background:#fff;border:5px solid #999;}
+  .camera-flash{position:absolute;inset:0;background:#fff;opacity:.9;animation:flashOut .3s forwards;}
+  @keyframes flashOut{to{opacity:0;}}
+  .photo-thumb{position:absolute;bottom:14px;right:14px;background:#fff;color:#000;font-size:22px;border-radius:10px;padding:4px 8px;}
+
+  .volume-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#EAF1F5;padding:20px;}
+  .volume-icon{font-size:48px;}
+  .volume-bar{width:80%;height:20px;background:#dfe6ea;border-radius:12px;overflow:hidden;}
+  .volume-fill{height:100%;background:var(--kaki);transition:width .2s;}
+  .volume-num{font-weight:700;font-size:18px;color:var(--navy);}
+
+  .quiz-screen{flex:1;background:#fff;padding:18px;display:flex;flex-direction:column;gap:14px;}
+  .quiz-q{font-size:16px;font-weight:700;color:var(--navy);}
+  .quiz-options{display:flex;gap:10px;}
+  .quiz-opt{flex:1;background:var(--paper-soft);border:none;border-radius:12px;padding:14px 0;font-size:20px;font-weight:700;}
+  .quiz-answer{font-size:15px;background:#FBEFE1;color:var(--kaki-deep);padding:12px;border-radius:10px;}
+
+  /* ---------- 画面下ナビゲーション（戻る・ホーム・履歴）練習 ---------- */
+  .app-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .nav-bar{flex:none;display:flex;justify-content:space-around;align-items:center;background:#000;padding:10px 0;}
+  .nav-btn{background:none;border:none;color:#fff;font-size:22px;width:60px;height:40px;border-radius:10px;}
+  .nav-btn:active{background:rgba(255,255,255,0.15);}
+  .settings-detail,.settings-list{flex:1;background:#fff;padding:18px;}
+  .settings-crumb{font-size:14px;color:#8a8270;margin-bottom:10px;}
+  .settings-big{font-size:20px;font-weight:700;color:var(--navy);margin-top:20px;}
+  .settings-row{padding:14px 10px;border-bottom:1px solid var(--paper-soft);font-size:17px;font-weight:700;}
+  .recents-screen{flex:1;background:#EAF1F5;padding:18px;display:flex;flex-direction:column;gap:14px;}
+  .recents-title{font-weight:700;color:var(--navy);margin-bottom:2px;}
+  .recent-card{background:#fff;border:none;border-radius:14px;padding:16px;font-size:17px;font-weight:700;text-align:left;box-shadow:0 2px 4px rgba(0,0,0,0.08);}
+  .recents-cards{display:flex;flex-wrap:wrap;gap:8px;}
+  .recent-card-mini{background:#fff;border-radius:12px;padding:10px 12px;font-size:14px;font-weight:700;box-shadow:0 2px 4px rgba(0,0,0,0.08);color:#5b5346;}
+  .clear-all-btn{margin-top:auto;background:var(--kaki);color:#fff;border:none;border-radius:999px;padding:14px 0;font-size:17px;font-weight:700;}
+  .recents-empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--moss-deep);font-size:17px;font-weight:700;}
+  .gallery-screen{flex:1;background:#fff;padding:16px;}
+  .gallery-title{font-weight:700;color:var(--navy);margin-bottom:10px;font-family:"Zen Maru Gothic",sans-serif;}
+  .gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .thumb-btn{position:relative;background:#EAF1F5;border:none;border-radius:12px;padding:16px 0 20px;font-size:30px;}
+  .thumb-btn.new{outline:2px solid var(--kaki);}
+  .thumb-badge{position:absolute;bottom:2px;left:0;right:0;font-size:9px;color:var(--kaki-deep);font-weight:700;}
+  .photo-view{flex:1;background:#111;position:relative;display:flex;align-items:center;justify-content:center;}
+  .photo-back{position:absolute;top:12px;left:12px;background:rgba(255,255,255,0.15);color:#fff;border:none;width:38px;height:38px;border-radius:10px;font-size:18px;}
+  .photo-big{font-size:90px;}
+  .scam-card{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#fff;padding:20px;text-align:center;}
+  .scam-icon{font-size:50px;}
+  .scam-text{font-size:16px;font-weight:700;color:var(--navy);}
+  .scam-risky-btn{background:#eee;border:2px solid #ccc;color:#555;border-radius:999px;padding:12px 22px;font-size:15px;font-weight:700;}
+  .rules-recap{flex:1;background:#fff;padding:20px;}
+  .rules-title{font-weight:700;color:var(--navy);font-size:18px;margin-bottom:10px;font-family:"Zen Maru Gothic",sans-serif;}
+  .rules-list{padding-left:22px;margin:0;font-size:15px;line-height:1.8;color:var(--ink);}
+  .rules-list li{margin-bottom:6px;}
+  .rules-note{margin-top:14px;font-size:15px;background:var(--paper-soft);padding:10px 12px;border-radius:10px;color:var(--kaki-deep);font-weight:700;}
+  .nav-intro{flex:1;background:#fff;padding:20px;display:flex;flex-direction:column;gap:14px;justify-content:center;}
+  .nav-intro-item{display:flex;align-items:flex-start;gap:14px;background:var(--paper-soft);border-radius:14px;padding:14px;}
+  .nav-glyph{flex:none;width:44px;height:44px;border-radius:12px;background:var(--navy);color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center;}
+  .nav-intro-item div{font-size:15px;line-height:1.6;}
+  .nav-intro-item b{color:var(--navy);}
+  .nav-btn.pulse-hint{animation:pulseHint 1s infinite;}
+
+  /* ---------- completion banner (overlay) ---------- */
+  .complete-overlay{
+    position:absolute;inset:0;background:rgba(28,43,74,0.92);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    color:#fff;text-align:center;padding:30px;border-radius:inherit;z-index:30;
+  }
+  .complete-overlay h3{color:var(--yamabuki);font-size:26px;}
+  .complete-overlay p{font-size:17px;}
+  .complete-overlay .stars-earned{font-size:40px;margin:6px 0;}
+  .complete-overlay .btn-row{display:flex;flex-direction:column;gap:10px;margin-top:16px;width:100%;}
+
+  /* ---------- final certificate screen ---------- */
+  #screen-final{text-align:center;padding-top:12vh;}
+  .certificate{
+    border:4px double var(--kaki);border-radius:18px;padding:30px 20px;
+    background:#fff;
+  }
+  .certificate h2{font-size:28px;color:var(--kaki-deep);}
+  .certificate .seal{font-size:50px;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important;transition-duration:0.001ms !important;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="topbar" style="display:none;">
+    <button class="icon-btn" id="btnHome" aria-label="ホームにもどる">🏠</button>
+    <div id="topInfo">
+      <div id="starLine">⭐ <span id="starCount">0</span> / <span id="starTotal">9</span></div>
+      <div id="beltDisplay">見習い（白帯）</div>
+    </div>
+  </div>
+
+  <!-- 1. タイトル画面 -->
+  <div class="screen active" id="screen-title">
+    <div class="torii">⛩️</div>
+    <h1>スマホ道場</h1>
+    <p>あわてなくて大丈夫。<br>ひとつずつ、じぶんのペースで<br>スマホの使い方をおぼえましょう。</p>
+    <button class="btn-primary" id="btnStart">はじめる</button>
+  </div>
+
+  <!-- 2. マップ画面 -->
+  <div class="screen" id="screen-map">
+    <h2>道場マップ</h2>
+    <p style="text-align:center;color:#5b5346;">好きな練習からタップして始められます</p>
+    <div id="stoneList"></div>
+  </div>
+
+  <!-- 3. 練習画面 -->
+  <div class="screen" id="screen-stage">
+    <div id="stageHeader">
+      <h2 id="stageTitle"></h2>
+      <p id="stageDesc"></p>
+    </div>
+    <div class="mascot-row">
+      <div class="mascot" id="mascot"><span id="mascotFace">😊</span></div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+    <div class="phone-frame" id="phoneFrame">
+      <div class="phone-notch"></div>
+      <div class="phone-screen" id="phoneScreen"></div>
+      <div class="side-buttons" id="sideButtons"></div>
+    </div>
+    <div id="stageControls"></div>
+    <div style="text-align:center;margin-top:22px;">
+      <button class="btn-secondary" id="btnBackToMap">道場マップへもどる</button>
+    </div>
+  </div>
+
+  <!-- 4. 全クリア画面 -->
+  <div class="screen" id="screen-final">
+    <div class="certificate">
+      <div class="seal">🏅</div>
+      <h2>免許皆伝</h2>
+      <p>すべての練習を終えました。<br>お疲れさまでした。</p>
+      <p style="font-size:15px;color:#8a8270;">これからも、こまったときはいつでも<br>この道場で練習できます。</p>
+    </div>
+    <button class="btn-secondary" id="btnFinalToMap" style="margin-top:24px;">道場マップへもどる</button>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const $ = (sel, root) => (root||document).querySelector(sel);
+  const $$ = (sel, root) => Array.from((root||document).querySelectorAll(sel));
+
+  let stars = 0;
+  let completed = [];
+  let currentStage = 0;
+
+  /* ---------- 共通ヘルパー ---------- */
+  function setFeedback(text, kind){
+    const f = $('#feedback');
+    f.textContent = text || '';
+    f.className = 'feedback' + (text ? ' show' : '') + (kind ? ' '+kind : '');
+  }
+  function setMascot(state){
+    $('#mascotFace').textContent = state === 'cheer' ? '🎉' : state === 'gentle' ? '🙂' : '😊';
+  }
+  function showScreen(name){
+    $$('.screen').forEach(s => s.classList.remove('active'));
+    $('#screen-'+name).classList.add('active');
+    $('#topbar').style.display = (name === 'title') ? 'none' : 'flex';
+  }
+  function beltName(){
+    const total = STAGES.length;
+    if (stars >= total) return '名人（黒帯）';
+    if (stars >= 7) return '二段（茶帯）';
+    if (stars >= 3) return '初段（青帯）';
+    return '見習い（白帯）';
+  }
+  function updateTopbar(){
+    $('#starCount').textContent = stars;
+    $('#starTotal').textContent = STAGES.length;
+    $('#beltDisplay').textContent = beltName();
+  }
+
+  /* 通常のホーム画面（Rakuten Linkのみ表示） */
+  function renderHomeHTML(){
+    const icons = [
+      {id:'link', label:'Rakuten Link', emoji:'📞', cls:'icon-link'},
+      {id:'camera', label:'カメラ', emoji:'📷'},
+      {id:'photos', label:'フォト', emoji:'🖼️'},
+      {id:'settings', label:'設定', emoji:'⚙️'},
+      {id:'weather', label:'天気', emoji:'☀️'},
+      {id:'family', label:'家族に電話', emoji:'👪'}
+    ];
+    return '<div class="home-screen"><div class="home-clock">10:24</div><div class="icon-grid">' +
+      icons.map(ic => '<button class="icon-btn-lg '+(ic.cls||'')+'" data-id="'+ic.id+'"><span class="icon-emoji">'+ic.emoji+'</span><span class="icon-label">'+ic.label+'</span></button>').join('') +
+      '</div></div>';
+  }
+
+  /* Rakuten Link 練習専用：標準電話との見分けを含むホーム画面 */
+  function renderCallHomeHTML(){
+    const icons = [
+      {id:'phone_decoy', label:'電話（標準）', emoji:'📞'},
+      {id:'link', label:'Rakuten Link', emoji:'📞', cls:'icon-link'},
+      {id:'camera', label:'カメラ', emoji:'📷'},
+      {id:'settings', label:'設定', emoji:'⚙️'},
+      {id:'weather', label:'天気', emoji:'☀️'},
+      {id:'family', label:'家族に電話', emoji:'👪'}
+    ];
+    return '<div class="home-screen"><div class="home-clock">10:24</div><div class="icon-grid">' +
+      icons.map(ic => '<button class="icon-btn-lg '+(ic.cls||'')+'" data-id="'+ic.id+'"><span class="icon-emoji">'+ic.emoji+'</span><span class="icon-label">'+ic.label+'</span></button>').join('') +
+      '</div></div>';
+  }
+
+  function attachSwipeOrTap(elm, onSuccess){
+    let startY = null, done = false;
+    elm.addEventListener('pointerdown', e => { startY = e.clientY; });
+    elm.addEventListener('pointerup', e => {
+      if (done) return;
+      if (startY !== null && (startY - e.clientY) > 30){ done = true; onSuccess(); }
+    });
+    elm.addEventListener('click', () => {
+      if (done) return;
+      if (elm.dataset.tapok === '1'){ done = true; onSuccess(); }
+    });
+    setTimeout(() => {
+      if (!done){
+        elm.dataset.tapok = '1';
+        const hint = $('#stageControls .hint-text');
+        if (hint) hint.insertAdjacentHTML('beforeend', '<br><small>うまくいかないときは、タップするだけでも大丈夫です</small>');
+      }
+    }, 3200);
+  }
+
+  /* ---------- 各練習（ステージ）の中身 ---------- */
+  function initStage0(phoneScreen, controls, sideButtons, api){
+    sideButtons.innerHTML = '<button class="side-btn" id="powerBtn" aria-label="電源ボタン">⏻</button>';
+    phoneScreen.innerHTML = '<div class="screen-off">画面が消えています</div>';
+    controls.innerHTML = '<p class="hint-text">📌 右側の電源ボタンをタップしてみましょう</p>';
+    $('#powerBtn', sideButtons).addEventListener('click', showLock, {once:true});
+
+    function showLock(){
+      phoneScreen.innerHTML = '<div class="lock-screen"><div class="lock-time">10:24</div><div class="lock-hint">↑ 上にスワイプ</div></div>';
+      controls.innerHTML = '<p class="hint-text">📌 画面を指で上にスワイプしてください</p>';
+      attachSwipeOrTap($('.lock-screen', phoneScreen), showHome);
+    }
+    function showHome(){
+      phoneScreen.innerHTML = renderHomeHTML();
+      controls.innerHTML = '<p class="hint-text">✅ ホーム画面が出ました！</p>';
+      setFeedback('画面が開けました！', 'good');
+      api.success();
+    }
+  }
+
+  function initStageNav(phoneScreen, controls, sideButtons, api){
+    sideButtons.innerHTML = '';
+    let step = 'intro';
+    let wrongCount = 0;
+    showIntro();
+
+    function showIntro(){
+      phoneScreen.innerHTML = '<div class="nav-intro">' +
+        '<div class="nav-intro-item"><span class="nav-glyph">◁</span><div><b>いちばん左（三角）</b><br>今の画面をやめて、ひとつ前に見ていた画面にもどります。本のページを1枚めくって、前のページに戻るのと同じです。</div></div>' +
+        '<div class="nav-intro-item"><span class="nav-glyph">○</span><div><b>真ん中（丸）</b><br>何をしていても、いちばんはじめの画面（ホーム画面）に、すぐもどれます。迷ったときはこれを押せば大丈夫です。</div></div>' +
+        '<div class="nav-intro-item"><span class="nav-glyph">□</span><div><b>右はし（四角）</b><br>使ったアプリの「お片付け」です。使っているうちに、うしろにアプリがたまっていきます。ふだんは使わなくても大丈夫ですが、たまってきたら、これでまとめて消せます。</div></div>' +
+        '</div>';
+      controls.innerHTML = '<button class="btn-primary" id="navIntroNext" style="margin-top:0;">わかった、練習してみる</button>';
+      $('#navIntroNext', controls).addEventListener('click', () => { step = 'toBack'; renderShell(); showDetailScreen(); }, {once:true});
+    }
+    function renderShell(){
+      phoneScreen.innerHTML = '<div class="app-area" id="appArea"></div>' +
+        '<div class="nav-bar">' +
+          '<button class="nav-btn" data-nav="back" aria-label="戻る">◁</button>' +
+          '<button class="nav-btn" data-nav="home" aria-label="ホーム">○</button>' +
+          '<button class="nav-btn" data-nav="recents" aria-label="履歴">□</button>' +
+        '</div>';
+      $$('.nav-btn', phoneScreen).forEach(b => b.addEventListener('click', () => onNav(b.dataset.nav)));
+    }
+    function appArea(){ return $('#appArea', phoneScreen); }
+
+    function showDetailScreen(){
+      appArea().innerHTML = '<div class="settings-detail"><div class="settings-crumb">設定 ＞ 音量</div><div class="settings-big">🔊 音量：7</div></div>';
+      controls.innerHTML = '<p class="hint-text">📌 今は『音量』の画面です。下の3つのボタンのうち、いちばん左にある三角のボタンをタップしてみましょう。画面が『設定の一覧』に変わります。</p>';
+      wrongCount = 0;
+    }
+    function showSettingsList(){
+      appArea().innerHTML = '<div class="settings-list"><div class="settings-crumb">設定</div>' +
+        '<div class="settings-row">🔊 音量</div><div class="settings-row">📶 Wi-Fi</div><div class="settings-row">🔤 文字の大きさ</div></div>';
+      controls.innerHTML = '<p class="hint-text">📌 つぎは、真ん中の丸いボタンをタップしてみましょう。画面がホーム画面に変わります。</p>';
+      setFeedback('画面が「設定の一覧」に変わりました。これが「戻る」ボタンです', 'good');
+      wrongCount = 0;
+    }
+    function showHomeStep(){
+      appArea().innerHTML = renderHomeHTML();
+      controls.innerHTML = '<p class="hint-text">📌 つぎは、右はしの四角いボタンをタップしてみましょう。使ったアプリのお片付け画面が出てきます。</p>';
+      setFeedback('ホーム画面にもどれました。これが「ホーム」ボタンです', 'good');
+      wrongCount = 0;
+    }
+    function showRecents(){
+      appArea().innerHTML = '<div class="recents-screen"><div class="recents-title">今まで使ったアプリ</div>' +
+        '<div class="recents-cards">' +
+          '<div class="recent-card-mini">⚙️ 設定</div>' +
+          '<div class="recent-card-mini">📷 カメラ</div>' +
+          '<div class="recent-card-mini">📞 Rakuten Link</div>' +
+          '<div class="recent-card-mini">☀️ 天気</div>' +
+        '</div>' +
+        '<button class="clear-all-btn" id="clearAll">🧹 すべて消す</button>' +
+        '</div>';
+      controls.innerHTML = '<p class="hint-text">📌 アプリを使っていると、こうやってうしろにたまっていきます。「すべて消す」をタップして、まとめてお片付けしてみましょう。</p>';
+      setFeedback('これが「履歴」ボタンです。ふだんは使わなくても大丈夫です', 'good');
+      $('#clearAll', appArea()).addEventListener('click', () => {
+        appArea().querySelector('.recents-cards').outerHTML = '<div class="recents-empty">きれいになりました</div>';
+        controls.innerHTML = '';
+        setFeedback('お片付けできました！', 'good');
+        setTimeout(() => api.success(), 900);
+      }, {once:true});
+    }
+    function nudge(correctKind, text){
+      wrongCount++;
+      setFeedback(text, 'gentle');
+      if (wrongCount >= 2){
+        const btn = phoneScreen.querySelector('[data-nav="'+correctKind+'"]');
+        if (btn) btn.classList.add('pulse-hint');
+      }
+    }
+    function onNav(kind){
+      if (step === 'toBack'){
+        if (kind === 'back'){ step = 'toHome'; showSettingsList(); }
+        else { nudge('back', 'いちばん左の、三角のボタンを押してみましょう'); }
+      } else if (step === 'toHome'){
+        if (kind === 'home'){ step = 'toRecents'; showHomeStep(); }
+        else { nudge('home', '真ん中の、丸いボタンを押してみましょう'); }
+      } else if (step === 'toRecents'){
+        if (kind === 'recents'){ step = 'done'; showRecents(); }
+        else { nudge('recents', '右はしの、四角いボタンを押してみましょう'); }
+      }
+    }
+  }
+
+  function initStage1(phoneScreen, controls, sideButtons, api){
+    const quiz = [
+      {ask:'Rakuten Link', id:'link'},
+      {ask:'カメラ', id:'camera'},
+      {ask:'家族に電話', id:'family'}
+    ];
+    let qi = 0, wrongCount = 0;
+    render();
+    function render(){
+      phoneScreen.innerHTML = renderHomeHTML();
+      controls.innerHTML = '<p class="hint-text">📌「'+quiz[qi].ask+'」のアイコンはどれでしょう？タップしてみましょう</p>';
+      $$('.icon-btn-lg', phoneScreen).forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (btn.dataset.id === quiz[qi].id){
+            btn.classList.add('correct-flash');
+            setFeedback('そうです！', 'good');
+            setTimeout(() => {
+              qi++; wrongCount = 0;
+              if (qi < quiz.length){ render(); } else { api.success(); }
+            }, 700);
+          } else {
+            wrongCount++;
+            btn.classList.add('wrong-flash');
+            setTimeout(() => btn.classList.remove('wrong-flash'), 400);
+            if (wrongCount >= 2){
+              setFeedback('もう一度、ゆっくりで大丈夫ですよ。光っているアイコンです', 'gentle');
+              const target = phoneScreen.querySelector('[data-id="'+quiz[qi].id+'"]');
+              target.classList.add('pulse-hint');
+            } else {
+              setFeedback('おしい！もう一度探してみましょう', 'gentle');
+            }
+          }
+        });
+      });
+    }
+  }
+
+  function initStageCall(phoneScreen, controls, sideButtons, api){
+    showIntro();
+    function showIntro(){
+      phoneScreen.innerHTML = '<div class="link-intro">' +
+        '<div class="link-icons-compare">' +
+          '<div class="compare-item"><span class="icon-emoji">📞</span><span class="icon-label">電話（標準）</span></div>' +
+          '<div class="compare-item highlight"><span class="icon-emoji">📞</span><span class="icon-label">Rakuten Link</span></div>' +
+        '</div>' +
+        '<div class="link-note">電話をかけるときは、かならず「Rakuten Link」を使いましょう。標準の電話アプリからかけると、お金がかかることがあります。</div>' +
+        '</div>';
+      controls.innerHTML = '<button class="btn-primary" id="introNext" style="margin-top:0;">わかった</button>';
+      $('#introNext', controls).addEventListener('click', showHome, {once:true});
+    }
+    function showHome(){
+      phoneScreen.innerHTML = renderCallHomeHTML();
+      controls.innerHTML = '<p class="hint-text">📌「Rakuten Link」のアイコンをタップしましょう</p>';
+      phoneScreen.querySelector('[data-id="link"]').addEventListener('click', showContacts, {once:true});
+      phoneScreen.querySelector('[data-id="phone_decoy"]').addEventListener('click', () => {
+        setFeedback('そちらは有料になることがあります。「Rakuten Link」を使いましょう', 'gentle');
+      });
+    }
+    function showContacts(){
+      phoneScreen.innerHTML = '<div class="list-screen"><div class="list-title">Rakuten Link　れんらくさき</div>' +
+        '<button class="contact-btn" data-name="👦 むすこ">👦 むすこ</button>' +
+        '<button class="contact-btn" data-name="👧 むすめ">👧 むすめ</button>' +
+        '<button class="contact-btn" data-name="🏥 〇〇病院">🏥 〇〇病院</button></div>';
+      controls.innerHTML = '<p class="hint-text">📌 かけたい相手をタップしましょう</p>';
+      $$('.contact-btn', phoneScreen).forEach(b => b.addEventListener('click', () => showCalling(b.dataset.name), {once:true}));
+    }
+    function showCalling(name){
+      phoneScreen.innerHTML = '<div class="calling-screen"><div class="calling-name">'+name+'</div><div class="calling-status">呼び出し中…</div></div>';
+      controls.innerHTML = '';
+      setTimeout(() => {
+        phoneScreen.innerHTML = '<div class="calling-screen connected"><div class="calling-name">'+name+'</div><div class="calling-status">つながりました（無料）</div><button id="hangup" class="hangup-btn">🔴 通話終了</button></div>';
+        phoneScreen.querySelector('#hangup').addEventListener('click', () => {
+          setFeedback('Rakuten Linkから、無料で電話がかけられました！', 'good');
+          api.success();
+        }, {once:true});
+      }, 1500);
+    }
+  }
+
+  function initStage3(phoneScreen, controls, sideButtons, api){
+    phoneScreen.innerHTML = '<div class="calling-blank">電話を待っています…</div>';
+    controls.innerHTML = '<p class="hint-text">少し待つと、電話がかかってきます</p>';
+    setTimeout(showIncoming, 1300);
+    function showIncoming(){
+      phoneScreen.innerHTML = '<div class="incoming-screen ring"><div class="incoming-name">👦 むすこ</div><div class="incoming-sub">Rakuten Linkに電話がかかってきています</div>' +
+        '<div class="incoming-buttons"><button class="decline-btn" aria-label="拒否">🔴</button><button class="answer-btn" aria-label="応答">🟢</button></div></div>';
+      controls.innerHTML = '<p class="hint-text">📌 緑色のボタンをタップして、電話に出てみましょう</p>';
+      phoneScreen.querySelector('.decline-btn').addEventListener('click', () => {
+        setFeedback('今回は「電話に出る」練習です。緑のボタンを押してみましょう', 'gentle');
+      });
+      phoneScreen.querySelector('.answer-btn').addEventListener('click', () => {
+        phoneScreen.innerHTML = '<div class="calling-screen connected"><div class="calling-name">👦 むすこ</div><div class="calling-status">つながりました</div></div>';
+        setFeedback('じょうずに電話に出られました！', 'good');
+        setTimeout(() => api.success(), 800);
+      }, {once:true});
+    }
+  }
+
+  function initStage5(phoneScreen, controls, sideButtons, api){
+    showHome();
+    function showHome(){
+      phoneScreen.innerHTML = renderHomeHTML();
+      controls.innerHTML = '<p class="hint-text">📌「カメラ」のアイコンをタップしましょう</p>';
+      phoneScreen.querySelector('[data-id="camera"]').addEventListener('click', showCamera, {once:true});
+    }
+    function showCamera(){
+      phoneScreen.innerHTML = '<div class="camera-screen"><div class="viewfinder">🌸</div><button class="shutter-btn" aria-label="シャッター"></button></div>';
+      controls.innerHTML = '<p class="hint-text">📌 まん中の丸いボタンをタップして写真をとりましょう</p>';
+      phoneScreen.querySelector('.shutter-btn').addEventListener('click', () => {
+        const flash = document.createElement('div');
+        flash.className = 'camera-flash';
+        phoneScreen.querySelector('.camera-screen').appendChild(flash);
+        setTimeout(() => {
+          flash.remove();
+          phoneScreen.querySelector('.camera-screen').insertAdjacentHTML('beforeend', '<div class="photo-thumb">🌸✅</div>');
+          setFeedback('きれいに撮れました！', 'good');
+          setTimeout(() => api.success(), 700);
+        }, 280);
+      }, {once:true});
+    }
+  }
+
+  function initStagePhotos(phoneScreen, controls, sideButtons, api){
+    showHome();
+    function showHome(){
+      phoneScreen.innerHTML = renderHomeHTML();
+      controls.innerHTML = '<p class="hint-text">📌「フォト」のアイコンをタップしましょう</p>';
+      phoneScreen.querySelector('[data-id="photos"]').addEventListener('click', showGallery, {once:true});
+    }
+    function showGallery(){
+      phoneScreen.innerHTML = '<div class="gallery-screen"><div class="gallery-title">フォト</div><div class="gallery-grid">' +
+        '<button class="thumb-btn new" data-photo="flower">🌸<span class="thumb-badge">さっき撮った</span></button>' +
+        '<button class="thumb-btn" data-photo="rice">🍙</button>' +
+        '<button class="thumb-btn" data-photo="dog">🐕</button>' +
+        '<button class="thumb-btn" data-photo="sunset">🌇</button>' +
+        '</div></div>';
+      controls.innerHTML = '<p class="hint-text">📌 さっき撮った、花の写真（🌸）をタップしてみましょう</p>';
+      $$('.thumb-btn', phoneScreen).forEach(b => b.addEventListener('click', () => {
+        if (b.dataset.photo === 'flower'){ showPhotoView(); }
+        else { setFeedback('そちらではありません。花の写真（🌸）を探してみましょう', 'gentle'); }
+      }));
+    }
+    function showPhotoView(){
+      phoneScreen.innerHTML = '<div class="photo-view"><button class="photo-back" id="photoBack" aria-label="戻る">◁</button><div class="photo-big">🌸</div></div>';
+      controls.innerHTML = '<p class="hint-text">📌 写真が大きく見られました。左上の「◁」をタップして、もどってみましょう</p>';
+      $('#photoBack', phoneScreen).addEventListener('click', () => {
+        setFeedback('じょうずに写真が見られました！', 'good');
+        api.success();
+      }, {once:true});
+    }
+  }
+
+  function initStage6(phoneScreen, controls, sideButtons, api){
+    let level = 3;
+    const target = 7;
+    sideButtons.innerHTML = '<button class="side-btn" id="volUp" aria-label="音量を上げる">＋</button><button class="side-btn" id="volDown" aria-label="音量を下げる">－</button>';
+    render();
+    function render(){
+      phoneScreen.innerHTML = '<div class="volume-screen"><div class="volume-icon">'+(level===0?'🔇':'🔊')+'</div>' +
+        '<div class="volume-bar"><div class="volume-fill" style="width:'+(level*10)+'%"></div></div>' +
+        '<div class="volume-num">'+level+' / 10</div></div>';
+      controls.innerHTML = '<p class="hint-text">📌 横の「＋」ボタンで、音を大きくしてみましょう（目ひょう：7）</p>';
+    }
+    $('#volUp', sideButtons).addEventListener('click', () => {
+      level = Math.min(10, level+1); render();
+      if (level >= target){ setFeedback('ちょうどいい音量になりました！', 'good'); setTimeout(() => api.success(), 700); }
+    });
+    $('#volDown', sideButtons).addEventListener('click', () => { level = Math.max(0, level-1); render(); });
+  }
+
+  const SCAM_SCENARIOS = [
+    {
+      content: '<div class="scam-card"><div class="scam-icon">📞</div><div class="scam-text">知らない番号から、電話がかかってきました。<br>080-1234-5678</div><button class="scam-risky-btn" id="riskyBtn">でる</button></div>',
+      instruction: '知らない番号です。出なくても大丈夫。下の○（ホーム）を押して、気にせず戻ってみましょう。',
+      warn: '知らない番号には、出なくても大丈夫です。○を押してみましょう'
+    },
+    {
+      content: '<div class="scam-card"><div class="scam-icon">✉️</div><div class="scam-text">「荷物をお届けできませんでした。こちらからご確認ください」</div><button class="scam-risky-btn" id="riskyBtn">リンクを開く</button></div>',
+      instruction: '知らないメッセージです。リンクは押さなくても大丈夫。○を押して戻ってみましょう。',
+      warn: '知らないリンクは、押さないようにしましょう。○を押してみましょう'
+    },
+    {
+      content: '<div class="scam-card"><div class="scam-icon">⚠️</div><div class="scam-text">「このアプリをインストールしてください」</div><button class="scam-risky-btn" id="riskyBtn">インストールする</button></div>',
+      instruction: '自分では入れずに、家族に確認しましょう。今回は○を押してみましょう。',
+      warn: '自分で入れずに、家族に確認しましょう。○を押してみましょう'
+    },
+    {
+      content: '<div class="scam-card"><div class="scam-icon">💰</div><div class="scam-text">「料金が未払いです。今すぐカード番号を入力してください」</div><button class="scam-risky-btn" id="riskyBtn">番号を入力する</button></div>',
+      instruction: 'お金の話は、自分で決めずに家族に相談しましょう。今回は○を押してみましょう。',
+      warn: 'お金の話は、自分で決めないようにしましょう。○を押してみましょう'
+    }
+  ];
+
+  function initStage7(phoneScreen, controls, sideButtons, api){
+    sideButtons.innerHTML = '';
+    let scenarioIndex = 0;
+    showIntro();
+
+    function showIntro(){
+      phoneScreen.innerHTML = '<div class="nav-intro"><div class="nav-intro-item"><span class="nav-glyph">⚠️</span><div><b>スマホを安全に使おう</b><br>お金や大切な情報をねらって、銀行・宅配便・家族などになりすまして連絡してくる人がいます。よく分からないものは、自分では判断しないことが大切です。</div></div></div>';
+      controls.innerHTML = '<button class="btn-primary" id="scamIntroNext" style="margin-top:0;">わかった、練習してみる</button>';
+      $('#scamIntroNext', controls).addEventListener('click', () => { scenarioIndex = 0; renderShell(); showScenario(); }, {once:true});
+    }
+    function renderShell(){
+      phoneScreen.innerHTML = '<div class="app-area" id="appArea"></div>' +
+        '<div class="nav-bar">' +
+          '<button class="nav-btn" data-nav="back" aria-label="戻る">◁</button>' +
+          '<button class="nav-btn" data-nav="home" aria-label="ホーム">○</button>' +
+          '<button class="nav-btn" data-nav="recents" aria-label="履歴">□</button>' +
+        '</div>';
+      $$('.nav-btn', phoneScreen).forEach(b => b.addEventListener('click', () => onNav(b.dataset.nav)));
+    }
+    function appArea(){ return $('#appArea', phoneScreen); }
+    function showScenario(){
+      const sc = SCAM_SCENARIOS[scenarioIndex];
+      appArea().innerHTML = sc.content;
+      controls.innerHTML = '<p class="hint-text">📌 '+sc.instruction+'</p>';
+      $('#riskyBtn', appArea()).addEventListener('click', () => { setFeedback(sc.warn, 'gentle'); });
+    }
+    function onNav(kind){
+      if (kind === 'home'){
+        setFeedback('○を押して、安全にもどれました！', 'good');
+        scenarioIndex++;
+        if (scenarioIndex < SCAM_SCENARIOS.length){ showScenario(); } else { showRulesRecap(); }
+      } else {
+        setFeedback('今回は、真ん中の○（ホーム）を押してみましょう', 'gentle');
+      }
+    }
+    function showRulesRecap(){
+      phoneScreen.innerHTML = '<div class="rules-recap"><div class="rules-title">こまったときの5つのルール</div><ol class="rules-list">' +
+        '<li>分からなかったら、押さない</li>' +
+        '<li>知らない電話には、出ない</li>' +
+        '<li>知らないメッセージのリンクは、押さない</li>' +
+        '<li>お金・カード・銀行の話が出たら、止まる</li>' +
+        '<li>「インストール」と出たら、家族に聞く</li>' +
+        '</ol><div class="rules-note">迷ったら、○でホームに戻って、家族に聞きましょう。</div></div>';
+      controls.innerHTML = '<button class="btn-primary" id="rulesNext" style="margin-top:0;">つぎへ</button>';
+      $('#rulesNext', controls).addEventListener('click', showHome, {once:true});
+    }
+    function showHome(){
+      phoneScreen.innerHTML = renderHomeHTML();
+      controls.innerHTML = '<p class="hint-text">📌 操作にこまったときは「家族に電話」が便利です。タップしてみましょう</p>';
+      phoneScreen.querySelector('[data-id="family"]').addEventListener('click', () => {
+        phoneScreen.innerHTML = '<div class="calling-screen connected"><div class="calling-name">👦 むすこ</div><div class="calling-status">つながりました</div></div>';
+        controls.innerHTML = '';
+        setFeedback('こまったときは、いつでも家族に電話して大丈夫です', 'good');
+        setTimeout(showQuiz, 1300);
+      }, {once:true});
+    }
+    function showQuiz(){
+      phoneScreen.innerHTML = '<div class="quiz-screen"><div class="quiz-q">きゅうに具合が悪くなり、救急車を呼びたいときは、何番に電話しますか？</div>' +
+        '<div class="quiz-options"><button class="quiz-opt" data-v="110">110</button><button class="quiz-opt" data-v="119">119</button><button class="quiz-opt" data-v="118">118</button></div></div>';
+      controls.innerHTML = '';
+      $$('.quiz-opt', phoneScreen).forEach(b => b.addEventListener('click', () => {
+        if (b.dataset.v === '119'){
+          phoneScreen.querySelector('.quiz-screen').insertAdjacentHTML('beforeend', '<div class="quiz-answer">正解です！119は消防・救急への電話番号です。110は警察への電話番号です。おぼえておきましょう。</div>');
+          setFeedback('よくできました！', 'good');
+          setTimeout(() => api.success(), 1400);
+        } else {
+          setFeedback('おしい！119が救急車の番号です。もう一度考えてみましょう', 'gentle');
+        }
+      }));
+    }
+  }
+
+  const STAGES = [
+    {title:'電源を入れて画面を開けよう', desc:'サイドの電源ボタンを押して、画面ロックを解除する練習です。', init:initStage0},
+    {title:'画面下のボタンをおぼえよう', desc:'画面の下にある「◁ 戻る」「○ ホーム」「□ 履歴」の使い方です。', init:initStageNav},
+    {title:'ホーム画面のアイコンをおぼえよう', desc:'よく使うアイコンの場所をおぼえましょう。', init:initStage1},
+    {title:'電話は「Rakuten Link」を使おう', desc:'電話をかけるときはRakuten Linkのアイコンから。標準の電話アプリと間違えないようにしましょう。', init:initStageCall},
+    {title:'かかってきた電話に出てみよう', desc:'電話が鳴ったときの操作です。', init:initStage3},
+    {title:'写真をとってみよう', desc:'カメラアプリで写真をとる練習です。', init:initStage5},
+    {title:'とった写真を見てみよう', desc:'「フォト」というアプリで、とった写真を見る練習です。', init:initStagePhotos},
+    {title:'音量を調整しよう', desc:'横のボタンで、音の大きさを変える練習です。', init:initStage6},
+    {title:'こまったときは', desc:'あやしい電話・メッセージの見分け方と、家族への連絡・緊急時の電話番号です。', init:initStage7}
+  ];
+  completed = STAGES.map(() => false);
+
+
+  /* ---------- マップ ---------- */
+  function renderMap(){
+    const list = $('#stoneList');
+    list.innerHTML = '';
+    STAGES.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'stone' + (completed[i] ? ' done' : '');
+      btn.innerHTML = '<span class="stone-num">'+(completed[i] ? '✔' : (i+1))+'</span><span class="stone-title">'+s.title+'</span>';
+      btn.addEventListener('click', () => startStage(i));
+      list.appendChild(btn);
+    });
+    updateTopbar();
+  }
+
+  function startStage(i){
+    currentStage = i;
+    showScreen('stage');
+    $('#stageTitle').textContent = STAGES[i].title;
+    $('#stageDesc').textContent = STAGES[i].desc;
+    $('#phoneScreen').innerHTML = '';
+    $('#sideButtons').innerHTML = '';
+    $('#stageControls').innerHTML = '';
+    setFeedback('', '');
+    setMascot('neutral');
+    const overlay = $('#phoneFrame').querySelector('.complete-overlay');
+    if (overlay) overlay.remove();
+    const api = { success: () => onStageSuccess(i) };
+    STAGES[i].init($('#phoneScreen'), $('#stageControls'), $('#sideButtons'), api);
+  }
+
+  function onStageSuccess(i){
+    if (!completed[i]){ completed[i] = true; stars++; }
+    setMascot('cheer');
+    updateTopbar();
+    showCompleteOverlay(i);
+  }
+
+  function showCompleteOverlay(i){
+    const frame = $('#phoneFrame');
+    const overlay = document.createElement('div');
+    overlay.className = 'complete-overlay';
+    const isAllDone = completed.every(Boolean);
+    let html = '<h3>できました！</h3><div class="stars-earned">⭐</div><p>「'+STAGES[i].title+'」の練習が終わりました。</p><div class="btn-row">';
+    if (!isAllDone && i < STAGES.length - 1 && !completed[i+1]){
+      html += '<button class="btn-primary" id="ovNext" style="margin-top:0;">つぎの練習へ</button>';
+    }
+    html += '<button class="btn-secondary" id="ovMap">道場マップへもどる</button></div>';
+    overlay.innerHTML = html;
+    frame.appendChild(overlay);
+    const nextBtn = $('#ovNext', overlay);
+    if (nextBtn) nextBtn.addEventListener('click', () => startStage(i+1));
+    $('#ovMap', overlay).addEventListener('click', () => {
+      if (isAllDone){ showScreen('final'); } else { showScreen('map'); renderMap(); }
+    });
+  }
+
+  /* ---------- 初期化 ---------- */
+  $('#btnStart').addEventListener('click', () => { showScreen('map'); renderMap(); });
+  $('#btnHome').addEventListener('click', () => { showScreen('map'); renderMap(); });
+  $('#btnBackToMap').addEventListener('click', () => { showScreen('map'); renderMap(); });
+  $('#btnFinalToMap').addEventListener('click', () => { showScreen('map'); renderMap(); });
+
+  showScreen('title');
+})();
+</script>
+</body>
+</html>
