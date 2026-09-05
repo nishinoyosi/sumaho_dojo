@@ -66,6 +66,7 @@
   #screen-title{text-align:center;padding-top:20vh;}
   #screen-title h1{font-size:40px;font-weight:900;}
   #screen-title p{color:#5b5346;font-size:18px;}
+  .version-tag{margin-top:26px;font-size:13px;color:#a89f8c;font-family:"BIZ UDPGothic",sans-serif;}
   .torii{font-size:56px;margin-bottom:6px;}
 
   .btn-primary{
@@ -332,6 +333,7 @@
     <h1>スマホ道場</h1>
     <p>あわてなくて大丈夫。<br>ひとつずつ、じぶんのペースで<br>スマホの使い方をおぼえましょう。</p>
     <button class="btn-primary" id="btnStart">はじめる</button>
+    <p class="version-tag" id="appVersion"></p>
   </div>
 
   <!-- 2. マップ画面 -->
@@ -381,6 +383,8 @@
   const $ = (sel, root) => (root||document).querySelector(sel);
   const $$ = (sel, root) => Array.from((root||document).querySelectorAll(sel));
 
+  const APP_VERSION = 'v1.0';
+
   let stars = 0;
   let completed = [];
   let currentStage = 0;
@@ -394,10 +398,14 @@
   function setMascot(state){
     $('#mascotFace').textContent = state === 'cheer' ? '🎉' : state === 'gentle' ? '🙂' : '😊';
   }
+  function scrollToTop(){
+    window.scrollTo(0, 0);
+  }
   function showScreen(name){
     $$('.screen').forEach(s => s.classList.remove('active'));
     $('#screen-'+name).classList.add('active');
     $('#topbar').style.display = (name === 'title') ? 'none' : 'flex';
+    scrollToTop();
   }
   function beltName(){
     const total = STAGES.length;
@@ -908,6 +916,14 @@
   $('#btnBackToMap').addEventListener('click', () => { showScreen('map'); renderMap(); });
   $('#btnFinalToMap').addEventListener('click', () => { showScreen('map'); renderMap(); });
 
+  /* 練習中の画面内容が切り替わったときも、説明が見えるよういちばん上へ戻す */
+  const phoneScreenEl = $('#phoneScreen');
+  if (phoneScreenEl && 'MutationObserver' in window){
+    const navObserver = new MutationObserver(() => { scrollToTop(); });
+    navObserver.observe(phoneScreenEl, { childList: true, subtree: true });
+  }
+
+  $('#appVersion').textContent = APP_VERSION;
   showScreen('title');
 })();
 </script>
